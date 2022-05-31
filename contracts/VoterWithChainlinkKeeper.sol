@@ -7,7 +7,7 @@ import "./Idea.sol";
 
 import "@chainlink/contracts/src/v0.8/KeeperCompatible.sol";
 
-contract Voter is  Idea, KeeperCompatibleInterface {
+contract VoterWithChainlinkKeeper is  Idea, KeeperCompatibleInterface {
 
 // already declared in fundingstate
     IDrafter public drafter;
@@ -26,9 +26,7 @@ contract Voter is  Idea, KeeperCompatibleInterface {
     // voter による投票の期限？
 	uint256 i_votingPeriod;
 
-    uint256 lastTimeStamp;
-
-
+    event IdeaDeleted(uint256);
 
     error duplicateVoting();
     error ideadisagree();
@@ -36,7 +34,6 @@ contract Voter is  Idea, KeeperCompatibleInterface {
     constructor(
 		uint256 _votingDelay,
 		uint256 _votingPeriod, 
-        address _fundMoneyFactoryAddress,
         address payable _drafterAddress, 
         address _fundingStateAddress
 	)
@@ -46,7 +43,6 @@ contract Voter is  Idea, KeeperCompatibleInterface {
         totalVoterCount = 0;
         drafter = IDrafter(_drafterAddress);
         fundingState = IFundingState(_fundingStateAddress);
-        lastTimeStamp = block.timestamp;
     }
 
 
@@ -72,14 +68,36 @@ contract Voter is  Idea, KeeperCompatibleInterface {
 
     }
 
-
-    function checkUpkeep(bytes calldata) external view override returns (bool upkeepNeeded) {
-        upkeepNeeded = (block.timestamp - lastTimeStamp) > interval;
+    function deleteIdea (uint256 ideaId) public {
+        drafter.deleteIdeaState(ideaId);
+        emit IdeaDeleted(ideaId);
     }
 
-    function performUpkeep(bytes calldata) external override {
-        if ((block.timestamp - lastTimeStamp) > interval ) {
-            lastTimeStamp = block.timestamp;
+    function getTimeOutId() public view returns (uint256 timeOutId) {
+        uint256 id = drafter.viewId();
+        for (uint i = 1; i < id + 1; i++) {
+            if (block.timestamp - (drafter.getSubmissionTime(i)) > i_votingPeriod) {
+                return i;
+            }
+        }
+    }
+
+
+    function checkUpkeep(bytes calldata) external view override returns (bool upkeepNeeded, bytes memory performData) {
+        uint256 timeOutId = getTimeOutId();
+        upkeepNeeded = (block.timestamp - drafter.getSubmissionTime(timeOutId)) > i_votingPeriod;
+        performData = abi.encode(timeOutId);
+        return (upkeepNeeded, performData);
+
+    }
+
+    function performUpkeep(bytes calldata performData) external override {
+        uint256 id = drafter.viewId();
+        uint256 timeOutId = abi.decode(performData, (uint256));
+        for (uint i = timeOutId; i < id + 1; i++) {
+            if (block.timestamp - (drafter.getSubmissionTime(i)) > i_votingPeriod) {
+                deleteIdea(i);
+            }
         }
     }    
 

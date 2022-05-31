@@ -25,7 +25,6 @@ const deployVoter: DeployFunction = async function (hre: HardhatRuntimeEnvironme
         args: [
             votingDelay,
             votingPeriod,
-            FundMoneyFactory.address,
             Drafter.address,
             FundingState.address,
         ],

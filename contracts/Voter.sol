@@ -32,7 +32,6 @@ contract Voter is  Idea {
     constructor(
 		uint256 _votingDelay,
 		uint256 _votingPeriod, 
-        address _fundMoneyFactoryAddress,
         address payable _drafterAddress, 
         address _fundingStateAddress
 	)

@@ -102,6 +102,10 @@ contract Drafter is Idea {
         idToIdeaState[ideaId].votingpossible = true;
     }
 
+    function deleteIdeaState(uint256 ideaId) public {
+        delete idToIdeaState[ideaId];
+    }
+
     receive() external payable {
     }
     fallback() external payable {

@@ -9,6 +9,7 @@ interface IDrafter {
         string calldata _investmentForm
     ) external;   
     function getId(uint256 ideaId) external view returns(uint256);
+    function viewId() external view returns(uint256);
     function getInventor(uint256 ideaId) external view returns(address);
     function getVotedNumber(uint256 ideaId) external view returns(uint256);
     function getGoalRate(uint256 ideaId) external view returns(uint256);
@@ -20,6 +21,7 @@ interface IDrafter {
     function getVotingpossible(uint256 ideaId) external view returns(bool);
     function getVoterCheck(uint256 ideaId) external view returns(bool);
     function addVotedNumber(uint256 ideaId) external returns(uint256);
+    function deleteIdeaState(uint256 ideaId) external;
     function changeVotingPossible(uint256 ideaId) external;
     function changeVoterCheck(uint256 ideaId) external;
 }
