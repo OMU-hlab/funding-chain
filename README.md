@@ -31,6 +31,7 @@ To develop locally
 　　```yarn hardhat compile```
 
 To test on local network
+
 4. Create local network: 
 
 　　```yarn hardhat node```
